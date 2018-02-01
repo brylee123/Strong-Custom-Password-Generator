@@ -5,7 +5,7 @@ Upper and Lower Case
 Numbers
 Char 6-15 = Weak
 Char 16+ = Strong
-Default Symbols: ` ! " ? $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ ' ~ # | \ < , > . ? /
+Default Symbols: ` ! " ? $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ ' ~ # | \ < , > . ?
 '''
 
 import random
@@ -28,28 +28,32 @@ def pw_generator(rules, pw_length):
 	return strong_pw
 
 def yes_no(rule_string):
-	p = False
-	while not p:
-		rule = input("Allow %s (Y/N): " % rule_string)
-		if rule[0].lower() == "y":
+	error = "\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m"
+	while 1:
+		user_decision = input("Allow %s (Y/N): " % rule_string)
+		if len(user_decision) == 0:
+			print(error)
+			continue
+		if user_decision[0].lower() == "y":
 			rule = True
 			break
-		elif rule[0].lower() == "n":
+		elif user_decision[0].lower() == "n":
 			rule = False
 			break
 		else:
-			p = False
-			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
+			print(error)
 	return rule
 
 def print_pw(s):
+	print("**********************************************************************")
 	print("Plaintext Password:", s)
-	print("MD5:\t", hashlib.md5(s.encode()).hexdigest())
-	print("SHA1:\t", hashlib.sha1(s.encode()).hexdigest())
+	print("MD5:\t",    hashlib.md5(s.encode()).hexdigest())
+	print("SHA1:\t",   hashlib.sha1(s.encode()).hexdigest())
 	print("SHA224:\t", hashlib.sha224(s.encode()).hexdigest())
 	print("SHA256:\t", hashlib.sha256(s.encode()).hexdigest())
 	print("SHA384:\t", hashlib.sha384(s.encode()).hexdigest())
 	print("SHA512:\t", hashlib.sha512(s.encode()).hexdigest())
+	print("**********************************************************************")
 
 if __name__ == "__main__":
 
@@ -111,38 +115,57 @@ if __name__ == "__main__":
 	# Successful
 	pw_length = int(pw_length)
 
+	# Allow Rules? If so, append to rules list
 	allow_upper   = yes_no("Upper Case")
-	allow_lower   = yes_no("Lower Case")
-	allow_num     = yes_no("Numbers")
-	allow_symbols = yes_no("Symbols")
-
-	if allow_symbols:
-		print("Default Symbols: ` ! \" $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ \' ~ # | \ < , > .")
-		allow_default_symbols = yes_no("Default Symbols")
-
-	if not allow_default_symbols:
-		# Note to self: Potential weakpoint where user can spam the same character
-		# - Will fix in later build
-		while len(user_symbols) == 0:
-			user_symbols = list(input("Enter Custom Symbols, Not Characters/Numbers! (with no spaces or dividers):"))
-			if len(user_symbols) == 0:
-				print("You must enter a value.")
-
-	if not allow_lower and not allow_upper and not allow_num and not allow_symbols:
-		print("You will literally have an empty string as a password.")
-		print("Big mistake. Try again!")
-		exit()
-
-	# Compile User Rules:
-	if allow_lower:
-		rules.append(default_lower)
 	if allow_upper:
 		rules.append(default_upper)
+
+	allow_lower   = yes_no("Lower Case")
+	if allow_lower:
+		rules.append(default_lower)
+
+	allow_num     = yes_no("Numbers")
 	if allow_num:
 		rules.append(default_num)
-	if allow_symbols and allow_default_symbols:
-		rules.append(default_symbols)
-	elif allow_symbols and not allow_default_symbols:
+
+	allow_symbols = yes_no("Symbols")
+	if allow_symbols:
+		print("Default Symbols: ` ! \" $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ \' ~ # | < , > .")
+		allow_default_symbols = yes_no("Default Symbols")
+		if allow_default_symbols:
+			rules.append(default_symbols)
+
+	# Custom Symbols
+	if not allow_default_symbols:
+
+		while len(user_symbols) == 0:
+			user_symbols = list(input("Enter Custom Symbols, Not Characters/Numbers! (with no spaces or dividers):"))
+			
+			# Empty input
+			if len(user_symbols) == 0:
+				print("You must enter a value.")
+				continue
+
+			# Remove duplicates
+			user_symbols = list("".join(set(user_symbols)))
+
+			# Remove alphas and nums
+			filtered_input = []
+			for symbol in user_symbols:
+				if not symbol.isalnum():
+					filtered_input += symbol
+			user_symbols = filtered_input
+
+			# In case all characters were pre-existing
+			if len(user_symbols) == 0:
+				print("Entered only pre-existing characters. Add different characters!")
+		
+		print("Your custom characters:", str(user_symbols))
 		rules.append(user_symbols)
 
+	if not allow_lower and not allow_upper and not allow_num and not allow_symbols:
+		print("You literally have an empty string as a password.")
+		print("Bad user! Try again and do better!")
+		exit()
+		
 	print_pw(pw_generator(rules, pw_length))
