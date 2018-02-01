@@ -27,27 +27,29 @@ def pw_generator(rules, pw_length):
 		strong_pw += i
 	return strong_pw
 
+def yes_no(rule_string):
+	p = False
+	while not p:
+		rule = input("Allow %s (Y/N): " % rule_string)
+		if rule[0].lower() == "y":
+			rule = True
+			break
+		elif rule[0].lower() == "n":
+			rule = False
+			break
+		else:
+			p = False
+			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
+	return rule
+
 def print_pw(s):
 	print("Plaintext Password:", s)
-
-	# MD5
 	print("MD5:\t", hashlib.md5(s.encode()).hexdigest())
-
-	#SHA1
 	print("SHA1:\t", hashlib.sha1(s.encode()).hexdigest())
-
-	#SHA224
 	print("SHA224:\t", hashlib.sha224(s.encode()).hexdigest())
-	
-	#SHA256
 	print("SHA256:\t", hashlib.sha256(s.encode()).hexdigest())
-
-	#SHA384
 	print("SHA384:\t", hashlib.sha384(s.encode()).hexdigest())
-
-	#SHA512
 	print("SHA512:\t", hashlib.sha512(s.encode()).hexdigest())
-
 
 if __name__ == "__main__":
 
@@ -64,31 +66,27 @@ if __name__ == "__main__":
 	default_symbols = ["`",  "!", "\"", "?", "$",  "%", "^", "&", "*", "(", ")", 
 					   "_",  "-", "+",  "=", "{",  "[", "}", "]", ":", ";", "@", 
 					   "\'", "~", "#",  "|", "<", ",", ">", "."]
-	user_symbols    = []
+	user_symbols    = ""
 	rules = []
 
-
 	# Default Generated Password
+	print("======================================================================")
 	default_rules = [default_lower, default_upper, default_num, default_symbols]
 	print("This is a randomly generated 16 character password.")
 	print("There are (26+26+10+30)^16 possible combinations.")
 	print("That is about 2.634e31 possible combinations.")
 	print("NOTE: There is a little bit less than that since the program does not allow 3 characters to repeat consecutively.")
 	print_pw(pw_generator(default_rules, pw_length))
-	print("===================================")
-
+	print("======================================================================\n")
 
 	#exit()
 
-	# Form Submission Checks
-	#  - Can be condensed into a helper function.....in later build.
-	p1 = False
-	p2 = False
-	p3 = False
-	p4 = False
-	p5 = False
-	p6 = False
+	custom_pw = False
+	custom_pw = yes_no("Custom Password")
+	if custom_pw == False:
+		exit()
 
+	p1 = False
 	while not p1:
 		def isanumber(p):
 			try:
@@ -110,76 +108,25 @@ if __name__ == "__main__":
 		if p1 == False:
 			print("\033[0;31m"+"Invalid Input. Try Again with an Integer."+ "\033[0m")
 
-		# Successful
-		pw_length = int(pw_length)
+	# Successful
+	pw_length = int(pw_length)
 
-	while not p2:
-		allow_upper = input("Allow Upper Case (Y/N): ")
-		if allow_upper[0].lower() == "y":
-			allow_upper = True
-			break
-		elif allow_upper[0].lower() == "n":
-			allow_upper = False
-			break
-		else:
-			p2 = False
-			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
-
-	while not p3:
-		allow_lower = input("Allow Lower Case (Y/N): ")
-		if allow_lower[0].lower() == "y":
-			allow_lower = True
-			break
-		elif allow_lower[0].lower() == "n":
-			allow_lower = False
-			break
-		else:
-			p3 = False
-			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
-
-	while not p4:
-		allow_num = input("Allow Numbers (Y/N): ")
-		if allow_num[0].lower() == "y":
-			allow_num = True
-			break
-		elif allow_num[0].lower() == "n":
-			allow_num = False
-			break
-		else:
-			p4 = False
-			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
-
-	while not p5:
-		allow_symbols = input("Allow Symbols (Y/N): ")
-		if allow_symbols[0].lower() == "y":
-			allow_symbols = True
-			break
-		elif allow_symbols[0].lower() == "n":
-			allow_symbols = False
-			break
-		else:
-			p5 = False
-			print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
+	allow_upper   = yes_no("Upper Case")
+	allow_lower   = yes_no("Lower Case")
+	allow_num     = yes_no("Numbers")
+	allow_symbols = yes_no("Symbols")
 
 	if allow_symbols:
-		while not p6:
-			print("Default Symbols: ` ! \" $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ \' ~ # | \ < , > .")
-			allow_default_symbols = input("Allow Default Symbols (Y/N): ")
-			if allow_default_symbols[0].lower() == "y":
-				allow_default_symbols = True
-				break
-			elif allow_default_symbols[0].lower() == "n":
-				allow_default_symbols = False
-				break
-			else:
-				p6 = False
-				print("\033[0;31m"+"Invalid Input. Try Again with (Y/N)"+ "\033[0m")
+		print("Default Symbols: ` ! \" $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ \' ~ # | \ < , > .")
+		allow_default_symbols = yes_no("Default Symbols")
 
 	if not allow_default_symbols:
 		# Note to self: Potential weakpoint where user can spam the same character
 		# - Will fix in later build
-		allow_symbols = input("Enter Custom Symbols, Not Characters/Numbers! (with no spaces or dividers):")
-		user_symbols = list(allow_symbols)
+		while len(user_symbols) == 0:
+			user_symbols = list(input("Enter Custom Symbols, Not Characters/Numbers! (with no spaces or dividers):"))
+			if len(user_symbols) == 0:
+				print("You must enter a value.")
 
 	if not allow_lower and not allow_upper and not allow_num and not allow_symbols:
 		print("You will literally have an empty string as a password.")
@@ -199,5 +146,3 @@ if __name__ == "__main__":
 		rules.append(user_symbols)
 
 	print_pw(pw_generator(rules, pw_length))
-
-
