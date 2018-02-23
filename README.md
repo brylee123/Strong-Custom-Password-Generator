@@ -11,6 +11,7 @@ NOTE: There is a little bit less than that since the program does not allow 3 ch
 After each password generation, the MD5, SHA1, SHA224, SHA256, SHA384, and, SHA512 hashes are calculated and generated as well.
 
 To Do in the Future:
+
 ~~- Use helper functions to check all the user inputs to condense the code~~
 ~~- Check user supplied symbols to remove any redundant characters (repeats, letters, and numbers)~~
 - Color coordinate safe and outdated hash algorithms
