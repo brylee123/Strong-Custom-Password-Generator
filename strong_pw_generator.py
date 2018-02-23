@@ -13,9 +13,12 @@ import hashlib
 
 def pw_generator(rules, pw_length):
 	strong_pw = ""
+	types_inc = []
+
 	for i in range(pw_length):
 		diverse = False
-		#print("Current PW Build", strong_pw)
+		
+		# Choose different character if 3 in a row
 		while not diverse:
 			char_type = random.choice(rules)
 			i = random.choice(char_type)
@@ -24,7 +27,18 @@ def pw_generator(rules, pw_length):
 				diverse = False
 			else:
 				diverse = True
+
+		# Add to list if new rule
+		if char_type not in types_inc:
+			types_inc.append(char_type)
+
 		strong_pw += i
+
+	# If all rules are not used, retry
+	while len(types_inc) < len(rules):
+		print("Not diverse enough. Reroll.")
+		return pw_generator(rules, pw_length)
+
 	return strong_pw
 
 def yes_no(rule_string):
@@ -87,11 +101,11 @@ if __name__ == "__main__":
 
 	custom_pw = False
 	custom_pw = yes_no("Custom Password")
-	if custom_pw == False:
+	if not custom_pw:
 		exit()
 
-	p1 = False
-	while not p1:
+	valid_int = False
+	while not valid_int:
 		def isanumber(p):
 			try:
 				int(p)
@@ -104,18 +118,19 @@ if __name__ == "__main__":
 					return False
 
 		pw_length = input("Max length of PW? (Must be greater than 8): ")
-		p1 = isanumber(pw_length)
-		if p1 and int(pw_length) < 8:
+		valid_int = isanumber(pw_length)
+		if valid_int and int(pw_length) < 8:
 			print("\033[0;31m"+"Invalid Input. Try Again with an Length 8 or Greater."+ "\033[0m")
-			p1 = False
+			valid_int = False
 			continue
-		if p1 == False:
+		if valid_int == False:
 			print("\033[0;31m"+"Invalid Input. Try Again with an Integer."+ "\033[0m")
 
-	# Successful
+	# Successful Password Length, proceed
 	pw_length = int(pw_length)
 
-	# Allow Rules? If so, append to rules list
+
+	# Allow Rules? If yes, append to rules list
 	allow_upper   = yes_no("Upper Case")
 	if allow_upper:
 		rules.append(default_upper)
@@ -163,9 +178,11 @@ if __name__ == "__main__":
 		print("Your custom characters:", str(user_symbols))
 		rules.append(user_symbols)
 
+	# Disallowed all rules
 	if not allow_lower and not allow_upper and not allow_num and not allow_symbols:
 		print("You literally have an empty string as a password.")
 		print("Bad user! Try again and do better!")
 		exit()
 		
+	# Generate Password
 	print_pw(pw_generator(rules, pw_length))
