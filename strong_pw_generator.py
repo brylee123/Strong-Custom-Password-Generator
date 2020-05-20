@@ -8,7 +8,7 @@ Char 16+ = Strong
 Default Symbols: ` ! " ? $ ? % ^ & * ( ) _ - + = { [ } ] : ; @ ' ~ # | \ < , > . ?
 '''
 
-import random
+import secrets
 import hashlib
 
 def pw_generator(rules, pw_length):
@@ -20,8 +20,8 @@ def pw_generator(rules, pw_length):
 		
 		# Choose different character if 3 in a row
 		while not diverse:
-			char_type = random.choice(rules)
-			i = random.choice(char_type)
+			char_type = secrets.choice(rules)
+			i = secrets.choice(char_type)
 			if len(strong_pw) >= 3 and strong_pw[-1] == i and strong_pw[-2] == i:
 				print("Repetition detected. Rechoosing random character.")
 				diverse = False
